@@ -106,6 +106,7 @@ void get_size(int *psize){
 	do {
 		printf("Geben Sie eine gerade Zahl ein [2 - 10]: ");
 		scanf_s(" %d",psize);
+		flush_stdin();
 	} while (*psize < 2 || *psize > 10 || *psize%2 == 1);
 }
 
