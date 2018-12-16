@@ -22,21 +22,38 @@ void init_playground(karte_t **pplayground, int size);
 void show_playground(karte_t **pplayground, int size);
 void print_playground(karte_t **pplayground, int size, int found);
 void flush_stdin();
+void free_all(karte_t **pplayground, int size);
+void **load_playground(karte_t **pplayground, int *psize);
+void save_playground(karte_t **pplayground, int size);
 
 int main(void) {
 	int size;	// size of playground
 	int found = 0; // found pairs
+	char load_flag;
 
 	printf("******************** MEMORY ********************\n\n");
 
-	get_size(&size);
-	//printf("[DEBUG] SIZE: %d\n", size);
+	karte_t **pplayground = NULL;
 
-	karte_t **pplayground = allocate_memory(size);	// allocate memory for playground (does not work as void!)
+	printf("Moechten Sie einen Spielstand laden? [j/n] ");
+	scanf_s(" %c", &load_flag);
+	
+	if (load_flag == 'j') {
+		// load playground
+		load_playground(pplayground, &size);
+	}
+	else {
+		get_size(&size);
+		//printf("[DEBUG] SIZE: %d\n", size);
 
-	init_playground(pplayground, size);
-	show_playground(pplayground, size);
+		pplayground = allocate_memory(size);	// allocate memory for playground (does not work as void!)
 
+		init_playground(pplayground, size);
+		show_playground(pplayground, size);
+
+	}
+
+	
 	printf("Zum Starten des Spiels ");
 	system("PAUSE");
 
@@ -60,6 +77,10 @@ int main(void) {
 			y1 = atoi(token);
 			
 			if (x1 == -1 && y1 == -1) break;
+			else if (x1 == -2 && y1 == -2) {
+				save_playground(pplayground, size);
+				break;
+			}
 
 			pplayground[x1][y1].flag = 1;
 
@@ -77,6 +98,10 @@ int main(void) {
 			y2 = atoi(token);
 
 			if (x2 == -1 && y2 == -1) break;
+			else if (x1 == -2 && y1 == -2) {
+				save_playground(pplayground, size);
+				break;
+			}
 
 			pplayground[x2][y2].flag = 1;
 
@@ -89,18 +114,36 @@ int main(void) {
 				pplayground[x1][y1].flag = 0;
 				pplayground[x2][y2].flag = 0;
 			}
+
+			if (found == (size*size) / 2) break;
+
 	} while (1);
 
 
+	free_all(pplayground, size);
 	system("PAUSE");
 	return 0;
 }
 
+/**************************************************************************************************
+Function flushes input stream.
+Parameters:
+	void.
+Returns:
+	void.
+*/
 void flush_stdin() {
 	int flush_dummy;
 	while ((flush_dummy = getchar()) != '\n' && flush_dummy != EOF);
 }
 
+/**************************************************************************************************
+Function askes user to type in size of playground.
+Parameters:
+	int *size - pointer size of array.
+Returns:
+	void.
+*/
 void get_size(int *psize){
 	printf("Wie gross soll das quadratische Spiel werden? \n");
 	do {
@@ -110,6 +153,13 @@ void get_size(int *psize){
 	} while (*psize < 2 || *psize > 10 || *psize%2 == 1);
 }
 
+/**************************************************************************************************
+Function returns pointer to allocated memory.
+Parameters:
+	int size - size of array.
+Returns:
+	karte_t **pplayground.
+*/
 karte_t **allocate_memory(int size) {
 	
 	karte_t **pplayground = (karte_t**)malloc(size * sizeof(karte_t*));
@@ -127,6 +177,14 @@ karte_t **allocate_memory(int size) {
 	return pplayground;
 }
 
+/**************************************************************************************************
+Function initializes playground.
+Parameters:
+	karte_t **pplayground
+	int size
+Returns:
+	void.
+*/
 void init_playground(karte_t **pplayground, int size) {
 
 	char id = 65;
@@ -170,6 +228,14 @@ void init_playground(karte_t **pplayground, int size) {
 	}
 }
 
+/**************************************************************************************************
+Function prints playground to console.
+Parameters:
+	karte_t **pplayground
+	int size
+Returns:
+	void.
+*/
 void show_playground(karte_t **pplayground, int size) {
 
 	for (int row = 0; row < size; row++) {
@@ -181,7 +247,14 @@ void show_playground(karte_t **pplayground, int size) {
 		printf("\n");
 	}
 }
-
+/**************************************************************************************************
+Function prints playground to console.
+Parameters:
+	karte_t **pplayground
+	int size
+Returns:
+	void.
+*/
 void print_playground(karte_t **pplayground, int size, int found) {
 	printf("MEMORY:\t%d Paare gefunden!\n\n", found);
 	
@@ -193,4 +266,70 @@ void print_playground(karte_t **pplayground, int size, int found) {
 		}
 		printf("\n");
 	}
+}
+
+/**************************************************************************************************
+Function clears memory.
+Parameters:
+	karte_t **pplayground
+	int size
+Returns:
+	void.
+*/
+void free_all(karte_t **pplayground, int size) {
+	for (int i = 0; i < size; i++) {
+		free(pplayground[i]);
+	}
+	free(pplayground);
+}
+
+void **load_playground(karte_t **pplayground, int *psize) {	// BUG?
+
+	FILE *in = fopen("spielstand.dat", "rb");
+	karte_t **pplayground_tmp;
+
+	if (in == NULL) {
+		printf("Datei konnte nicht geoeffnet werden!\n");
+		return NULL;
+	}
+	else {
+		fread(psize, sizeof(int*), 1, in);
+		printf("Eingabe: %d\n", *psize);	// DEBUG
+
+		pplayground_tmp = allocate_memory(*psize);	// allocate memory for playground (does not work as void!)
+		
+		for (int row = 0; row < *psize; row++) {
+			for (int col = 0; col < *psize; col++) {
+				fread(&(pplayground_tmp[row][col]), sizeof(karte_t), 1, in);
+			}
+		}
+
+	}
+
+	fclose(in);
+	pplayground = pplayground_tmp;
+}
+
+void save_playground(karte_t **pplayground, int size) {	// BUG?
+
+	FILE *out = fopen("spielstand.dat", "wb");
+
+	if (out == NULL) {
+		printf("Datei konnte nicht geoeffent werden!\n");
+		return NULL;
+	}
+	else {
+		fwrite(&size, sizeof(int), 1, out);
+		printf("Ausgabe: %d\n", size);	// DEBUG
+
+		for (int row = 0; row < size; row++) {
+			for (int col = 0; col < size; col++) {
+				fwrite(&(pplayground[row][col]), sizeof(karte_t), 1, out);
+			}
+		}
+
+	}
+
+	fclose(out);
+
 }
