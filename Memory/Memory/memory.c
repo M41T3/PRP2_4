@@ -23,7 +23,7 @@ void show_playground(karte_t **pplayground, int size);
 void print_playground(karte_t **pplayground, int size, int found);
 void flush_stdin();
 void free_all(karte_t **pplayground, int size);
-void **load_playground(karte_t **pplayground, int *psize);
+karte_t **load_playground(int *psize);
 void save_playground(karte_t **pplayground, int size);
 
 int main(void) {
@@ -35,14 +35,14 @@ int main(void) {
 
 	karte_t **pplayground = NULL;
 
-	printf("Moechten Sie einen Spielstand laden? [j/n] ");
+	printf("Moechten Sie einen Spielstand laden? [j/n] ");	// ask user to load playground
 	scanf_s(" %c", &load_flag);
 	
-	if (load_flag == 'j') {
-		// load playground
-		load_playground(pplayground, &size);
+	if (load_flag == 'j') {	// load playground
+		
+		pplayground = load_playground(&size);
 	}
-	else {
+	else {	// randomly generate playground
 		get_size(&size);
 		//printf("[DEBUG] SIZE: %d\n", size);
 
@@ -283,22 +283,22 @@ void free_all(karte_t **pplayground, int size) {
 	free(pplayground);
 }
 
-void **load_playground(karte_t **pplayground, int *psize) {	// BUG?
+karte_t **load_playground(int *psize) {	// BUG?
 
-	FILE *in = fopen("spielstand.dat", "rb");
 	karte_t **pplayground_tmp;
+	FILE *in = fopen("spielstand.dat", "rb");	// Create stream
 
 	if (in == NULL) {
 		printf("Datei konnte nicht geoeffnet werden!\n");
 		return NULL;
 	}
 	else {
-		fread(psize, sizeof(int*), 1, in);
-		printf("Eingabe: %d\n", *psize);	// DEBUG
+		fread(psize, sizeof(int), 1, in);
+		printf("Read Size: %d\n", *psize);	// [DEBUG]
 
 		pplayground_tmp = allocate_memory(*psize);	// allocate memory for playground (does not work as void!)
 		
-		for (int row = 0; row < *psize; row++) {
+		for (int row = 0; row < *psize; row++) {		// save karte-structs to allocated memory
 			for (int col = 0; col < *psize; col++) {
 				fread(&(pplayground_tmp[row][col]), sizeof(karte_t), 1, in);
 			}
@@ -306,13 +306,25 @@ void **load_playground(karte_t **pplayground, int *psize) {	// BUG?
 
 	}
 
-	fclose(in);
-	pplayground = pplayground_tmp;
+	fclose(in);	// close file
+
+	// [DEBUG]:
+
+	for (int row = 0; row < *psize; row++) {
+		for (int col = 0; col < *psize; col++) {
+			printf("%c(%d) ", pplayground_tmp[row][col].id, pplayground_tmp[row][col].flag);
+		}
+		printf("\n");
+	}
+
+	// ->|
+
+	return pplayground_tmp;
 }
 
 void save_playground(karte_t **pplayground, int size) {	// BUG?
 
-	FILE *out = fopen("spielstand.dat", "wb");
+	FILE *out = fopen("spielstand.dat", "wb"); // Create stream
 
 	if (out == NULL) {
 		printf("Datei konnte nicht geoeffent werden!\n");
