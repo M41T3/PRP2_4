@@ -34,25 +34,26 @@ int main(void) {
 	printf("******************** MEMORY ********************\n\n");
 
 	karte_t **pplayground = NULL;
+	do {
 
-	printf("Moechten Sie einen Spielstand laden? [j/n] ");	// ask user to load playground
-	scanf_s(" %c", &load_flag);
+		printf("Moechten Sie einen Spielstand laden? [j/n] ");	// ask user to load playground
+		scanf(" %c", &load_flag);
 	
-	if (load_flag == 'j') {	// load playground
+		if (load_flag == 'j') {	// load playground
 		
-		pplayground = load_playground(&size);
-	}
-	else {	// randomly generate playground
-		get_size(&size);
-		//printf("[DEBUG] SIZE: %d\n", size);
+			pplayground = load_playground(&size);
+		}
+		else if(load_flag == 'n'){	// randomly generate playground
+			get_size(&size);
+			//printf("[DEBUG] SIZE: %d\n", size);
 
-		pplayground = allocate_memory(size);	// allocate memory for playground (does not work as void!)
+			pplayground = allocate_memory(size);	// allocate memory for playground (does not work as void!)
 
-		init_playground(pplayground, size);
-		show_playground(pplayground, size);
+			init_playground(pplayground, size);
+			show_playground(pplayground, size);
 
-	}
-
+		}
+	} while (load_flag != 'j' && load_flag != 'n');
 	
 	printf("Zum Starten des Spiels ");
 	system("PAUSE");
@@ -63,6 +64,7 @@ int main(void) {
 	int x1, y1, x2, y2;
 
 	flush_stdin();
+	system("cls");
 	do {
 			
 			printf("Geben Sie die Koordinaten für die 1.Karte ein [Zeile Spalte] (-1 -1 für Abbruch): ");
@@ -84,7 +86,7 @@ int main(void) {
 
 			pplayground[x1][y1].flag = 1;
 
-			printf("[DEBUG]1.  %d, %d\n", x1, y1);
+			//printf("[DEBUG]1.  %d, %d\n", x1, y1);
 
 			print_playground(pplayground, size, found);
 		
@@ -105,7 +107,7 @@ int main(void) {
 
 			pplayground[x2][y2].flag = 1;
 
-			printf("[DEBUG]2.  %d, %d\n", x2, y2);
+			//printf("[DEBUG]2.  %d, %d\n", x2, y2);
 
 			print_playground(pplayground, size, found);
 
@@ -148,7 +150,7 @@ void get_size(int *psize){
 	printf("Wie gross soll das quadratische Spiel werden? \n");
 	do {
 		printf("Geben Sie eine gerade Zahl ein [2 - 10]: ");
-		scanf_s(" %d",psize);
+		scanf(" %d",psize);
 		flush_stdin();
 	} while (*psize < 2 || *psize > 10 || *psize%2 == 1);
 }
@@ -283,7 +285,7 @@ void free_all(karte_t **pplayground, int size) {
 	free(pplayground);
 }
 
-karte_t **load_playground(int *psize) {	// BUG?
+karte_t **load_playground(int *psize) {	
 
 	karte_t **pplayground_tmp;
 	FILE *in = fopen("spielstand.dat", "rb");	// Create stream
@@ -294,7 +296,7 @@ karte_t **load_playground(int *psize) {	// BUG?
 	}
 	else {
 		fread(psize, sizeof(int), 1, in);
-		printf("Read Size: %d\n", *psize);	// [DEBUG]
+		//printf("Read Size: %d\n", *psize);	// [DEBUG]
 
 		pplayground_tmp = allocate_memory(*psize);	// allocate memory for playground (does not work as void!)
 		
@@ -332,7 +334,7 @@ void save_playground(karte_t **pplayground, int size) {	// BUG?
 	}
 	else {
 		fwrite(&size, sizeof(int), 1, out);
-		printf("Ausgabe: %d\n", size);	// DEBUG
+		//printf("Ausgabe: %d\n", size);	// DEBUG
 
 		for (int row = 0; row < size; row++) {
 			for (int col = 0; col < size; col++) {
