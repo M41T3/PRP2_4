@@ -116,6 +116,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="memory.c" />
+    <ClCompile Include="memory_utilities.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="memory_utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
