@@ -9,6 +9,7 @@ Date: 09.12.2018
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>	// Important for malloc, etc
+#include <time.h>
 
 typedef struct karte {
 	char id;
@@ -55,22 +56,26 @@ int main(void) {
 		}
 	} while (load_flag != 'j' && load_flag != 'n');
 	
+
 	printf("Zum Starten des Spiels ");
 	system("PAUSE");
+
+	system("cls");
+	print_playground(pplayground, size, 0);
 
 	char first_card[8];
 	char second_card[8];
 	char delim[2] = " ";
 	int x1, y1, x2, y2;
 
-	flush_stdin();
-	system("cls");
+	//flush_stdin();
+	
 	do {
 			
 			printf("Geben Sie die Koordinaten für die 1.Karte ein [Zeile Spalte] (-1 -1 für Abbruch): ");
 			gets(first_card);
 			
-			printf("[DEBUG] string: %s\n", first_card);
+			//printf("[DEBUG] string: %s\n", first_card);
 
 			char *token = strtok(first_card, delim);
 
@@ -205,7 +210,7 @@ void init_playground(karte_t **pplayground, int size) {
 		}
 	}
 
-	srand(time(NULL));
+	srand((int)time(NULL));
 	
 	int rand_row;
 	int rand_col;
@@ -330,7 +335,6 @@ void save_playground(karte_t **pplayground, int size) {	// BUG?
 
 	if (out == NULL) {
 		printf("Datei konnte nicht geoeffent werden!\n");
-		return NULL;
 	}
 	else {
 		fwrite(&size, sizeof(int), 1, out);
